@@ -8,7 +8,7 @@ La base de datos a emplear, adaptar y mejorar es de un campeonato de futbol.
 Tareas pendientes a realizar.
 
 1. Modificar la DB para llevar un control de anotación de goles
-2. generar sentencias SQL para :
+2. generar sentencias SQL para (hace uso de joins ):
    - Determinar la tabla de goleadores
    - tabla de posiciones de los equipos por torneo
    - Partidos empatados
