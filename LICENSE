@@ -1,0 +1,48 @@
+// Tabla de Goleadores
+SELECT  b.nombre,c.nombre AS equipo,d.descripcion AS posicion,count(a.jugador_id) as goles 
+FROM goles a INNER JOIN jugadores b ON a.jugador_id=b.id
+	INNER JOIN equipos c ON b.equipos_id=c.id
+	INNER JOIN posiciones d ON b.posiciones_id=d.id
+GROUP BY a.jugador_id,b.nombre,c.nombre,d.descripcion
+ORDER BY goles DESC,equipo ASC
+
+//Tabla de posiciones
+SELECT c.descripcion AS Torneo,a.nombre AS Equipo,
+(SELECT COUNT(equipos1_id) FROM partidos WHERE equipos1_id=a.id) + 
+(SELECT COUNT(equipos2_id) FROM partidos WHERE equipos2_id=a.id) AS PJ,
+(SELECT SUM(CASE WHEN goles_equipo1>goles_equipo2 THEN 1 ELSE 0 END) FROM partidos WHERE equipos1_id=a.id) + 
+(SELECT sum(CASE WHEN goles_equipo2>goles_equipo1 THEN 1 ELSE 0 END) FROM partidos WHERE equipos2_id=a.id) AS PG,
+(SELECT SUM(CASE WHEN goles_equipo1=goles_equipo2 THEN 1 ELSE 0 END) FROM partidos WHERE equipos1_id=a.id) + 
+(SELECT SUM(CASE WHEN goles_equipo2=goles_equipo1 THEN 1 ELSE 0 END) FROM partidos WHERE equipos2_id=a.id) AS PE,
+(SELECT SUM(CASE WHEN goles_equipo1<goles_equipo2 THEN 1 ELSE 0 END) FROM partidos WHERE equipos1_id=a.id) + 
+(SELECT SUM(CASE WHEN goles_equipo2<goles_equipo1 THEN 1 ELSE 0 END) FROM partidos WHERE equipos2_id=a.id) AS PP,
+(SELECT sum(CASE WHEN goles_equipo2>goles_equipo1 THEN 1 ELSE 0 END) FROM partidos WHERE equipos2_id=a.id) AS PGV,
+(SELECT SUM(CASE WHEN goles_equipo2<goles_equipo1 THEN 1 ELSE 0 END) FROM partidos WHERE equipos2_id=a.id) AS PPV,
+(SELECT SUM(goles_equipo1) FROM partidos WHERE equipos1_id=a.id) + 
+(SELECT SUM(goles_equipo2) FROM partidos WHERE equipos2_id=a.id) AS GF,
+(SELECT SUM(goles_equipo1) FROM partidos WHERE equipos2_id=a.id) + 
+(SELECT SUM(goles_equipo2) FROM partidos WHERE equipos1_id=a.id) AS GC,
+((SELECT SUM(goles_equipo1) FROM partidos WHERE equipos1_id=a.id) + 
+(SELECT SUM(goles_equipo2) FROM partidos WHERE equipos2_id=a.id)) -
+((SELECT SUM(goles_equipo1) FROM partidos WHERE equipos2_id=a.id) + 
+(SELECT SUM(goles_equipo2) FROM partidos WHERE equipos1_id=a.id)) AS GD,
+(SELECT SUM(goles_equipo2) FROM partidos WHERE equipos2_id=a.id) AS GFV,
+(SELECT SUM(goles_equipo1) FROM partidos WHERE equipos2_id=a.id) AS GCV,
+((SELECT SUM(CASE WHEN goles_equipo1>goles_equipo2 THEN 3 ELSE 0 END) FROM partidos WHERE equipos1_id=a.id) + 
+(SELECT sum(CASE WHEN goles_equipo2>goles_equipo1 THEN 3 ELSE 0 END) FROM partidos WHERE equipos2_id=a.id))+
+((SELECT SUM(CASE WHEN goles_equipo1=goles_equipo2 THEN 1 ELSE 0 END) FROM partidos WHERE equipos1_id=a.id) + 
+(SELECT SUM(CASE WHEN goles_equipo2=goles_equipo1 THEN 1 ELSE 0 END) FROM partidos WHERE equipos2_id=a.id)) AS PTS
+FROM equipos a INNER JOIN registro_equipos b ON a.id=b.equipos_id 
+	INNER JOIN torneo c ON b.torneos_id=c.id
+ORDER BY pts DESC,gd DESC,gfv DESC,gcv ASC 
+
+// equipo con la valla menos vencida
+
+SELECT X.nombre as Equipo,(SELECT SUM(goles_equipo1) FROM partidos WHERE equipos2_id=X.id) + 
+(SELECT SUM(goles_equipo2) FROM partidos WHERE equipos1_id=X.id) AS GC 
+FROM equipos X WHERE ((SELECT SUM(goles_equipo1) FROM partidos WHERE equipos2_id=X.id) + 
+(SELECT SUM(goles_equipo2) FROM partidos WHERE equipos1_id=X.id)) = 
+(SELECT MIN((SELECT SUM(goles_equipo1) FROM partidos WHERE equipos2_id=a.id) + 
+(SELECT SUM(goles_equipo2) FROM partidos WHERE equipos1_id=a.id)) AS GC
+FROM equipos a)
+
